@@ -46,7 +46,7 @@ The Vagrant configuration file is specifically for a Virtualbox system and has b
    ```
 2. Build the Host with Vagrant
    ```sh
-   test@vbox:~/DetectionLab/UbuntuAddon/ $ vagrant up
+   test@vbox:~/DetectionLabUbuntuAddon/ $ vagrant up
    ```
 3. Check in the Fleet console that osquery for ubuntu200 has been enrolled
 
