@@ -6,7 +6,7 @@ Vagrant.configure("2") do |config|
 
   config.vm.define "ubuntu" do |cfg|
     cfg.vm.box = "hashicorp/bionic64"
-    cfg.vm.network "private_network", ip: "192.168.38.200"
+    cfg.vm.network "private_network", ip: "192.168.56.200"
     cfg.vm.provider "virtualbox" do |vb, override|
       vb.gui = true
       vb.name = "ubuntu200"    
@@ -22,7 +22,7 @@ Vagrant.configure("2") do |config|
   config.vm.hostname = "ubuntu200"
 
   # OSQuery config files are copied
-  # Fleetdm server cert is pulled from 192.168.38.105 using curl and default creds
+  # Fleetdm server cert is pulled from 192.168.56.105 using curl and default creds
   config.vm.provision "file", source: "flagfile.txt", destination: "~/flagfile.txt"
   config.vm.provision "file", source: "secret.txt", destination: "~/secret.txt"
   config.vm.provision "file", source: "ossec.conf", destination: "~/ossec.conf"
@@ -35,21 +35,21 @@ Vagrant.configure("2") do |config|
      apt-get update
      apt-get install -y osquery ossec-hids-server sshpass
 
-     JWT=$(curl --insecure 'https://192.168.38.105:8412/api/v1/fleet/login' -H 'User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:90.0) Gecko/20100101 Firefox/90.0' -H 'Accept: application/json' -H 'Accept-Language: en-US,en;q=0.5' --compressed -H 'Referer: https://192.168.38.105:8412/login' -H 'Content-Type: application/json' -H 'Origin: https://192.168.38.105:8412' -H 'Connection: keep-alive' -H 'Sec-Fetch-Dest: empty' -H 'Sec-Fetch-Mode: cors' -H 'Sec-Fetch-Site: same-origin' -H 'Pragma: no-cache' -H 'Cache-Control: no-cache' -H 'TE: trailers' --data-raw '{"username":"admin","password":"admin123#"}' | python3 -c "import sys, json; print(json.load(sys.stdin)['token'])")
+     JWT=$(curl --insecure 'https://192.168.56.105:8412/api/v1/fleet/login' -H 'User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:90.0) Gecko/20100101 Firefox/90.0' -H 'Accept: application/json' -H 'Accept-Language: en-US,en;q=0.5' --compressed -H 'Referer: https://192.168.56.105:8412/login' -H 'Content-Type: application/json' -H 'Origin: https://192.168.56.105:8412' -H 'Connection: keep-alive' -H 'Sec-Fetch-Dest: empty' -H 'Sec-Fetch-Mode: cors' -H 'Sec-Fetch-Site: same-origin' -H 'Pragma: no-cache' -H 'Cache-Control: no-cache' -H 'TE: trailers' --data-raw '{"username":"admin","password":"admin123#"}' | python3 -c "import sys, json; print(json.load(sys.stdin)['token'])")
 
-     curl --insecure 'https://192.168.38.105:8412/api/v1/fleet/config/certificate' -H 'User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:90.0) Gecko/20100101 Firefox/90.0' -H 'Accept: application/json' -H 'Accept-Language: en-US,en;q=0.5' --compressed -H 'Content-Type: application/json' -H "Authorization: Bearer $JWT" -H 'Connection: keep-alive' -H 'Sec-Fetch-Dest: empty' -H 'Sec-Fetch-Mode: cors' -H 'Sec-Fetch-Site: same-origin' -H 'Pragma: no-cache' -H 'Cache-Control: no-cache' | python3 -c "import sys, json, base64; f=open('/tmp/fleet.pem', 'wb'); f.write(base64.b64decode(json.load(sys.stdin)['certificate_chain']))"
+     curl --insecure 'https://192.168.56.105:8412/api/v1/fleet/config/certificate' -H 'User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:90.0) Gecko/20100101 Firefox/90.0' -H 'Accept: application/json' -H 'Accept-Language: en-US,en;q=0.5' --compressed -H 'Content-Type: application/json' -H "Authorization: Bearer $JWT" -H 'Connection: keep-alive' -H 'Sec-Fetch-Dest: empty' -H 'Sec-Fetch-Mode: cors' -H 'Sec-Fetch-Site: same-origin' -H 'Pragma: no-cache' -H 'Cache-Control: no-cache' | python3 -c "import sys, json, base64; f=open('/tmp/fleet.pem', 'wb'); f.write(base64.b64decode(json.load(sys.stdin)['certificate_chain']))"
 
      mv /tmp/fleet.pem /etc/osquery/
      mv flagfile.txt /etc/osquery/osquery.flags
      mv secret.txt /etc/osquery/
 
      # Match SSL Cert Hostname (fleet)
-     echo "192.168.38.105    fleet" >> /etc/hosts
+     echo "192.168.56.105    fleet" >> /etc/hosts
 
      # Add UDP syslog input to splunk and syslog_output to ossec.conf
      # sshpass allows input of password on the command line
      echo "enable splunk udp"
-     sshpass -p "vagrant" ssh -o StrictHostKeyChecking=no vagrant@192.168.38.105 "sudo /opt/splunk/bin/splunk add udp 514 -sourcetype syslog -index syslog -auth admin:changeme"
+     sshpass -p "vagrant" ssh -o StrictHostKeyChecking=no vagrant@192.168.56.105 "sudo /opt/splunk/bin/splunk add udp 514 -sourcetype syslog -index syslog -auth admin:changeme"
      mv ossec.conf /var/ossec/etc/
      echo "enable syslog on ossec"
      /var/ossec/bin/ossec-control enable client-syslog

@@ -1,5 +1,5 @@
 # Server
-#--tls_hostname=192.168.38.105:8412
+#--tls_hostname=192.168.56.105:8412
 # Required to match certificate
 --tls_hostname=fleet:8412
 --tls_server_certs=/etc/osquery/fleet.pem
